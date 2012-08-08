@@ -6,21 +6,21 @@ use v5.10;
 
 use constant {
 # --- <Protocol infos> ---
-  SEPARATION_CHAR 	=> '#',
-  RECV_MESSAGE 		=> 'MESS',
-  RECV_LIST 		=> 'LIST',
-  RECV_PSEUDO 		=> 'NAME',
-  RECV_ACCEPT 		=> 'OK',
-  RECV_REFUSE 		=> 'KO',
+  SEPARATION_CHAR => '#',
+  RECV_MESSAGE => 'MESS',
+  RECV_LIST => 'LIST',
+  RECV_PSEUDO => 'NAME',
+  RECV_ACCEPT => 'OK',
+  RECV_REFUSE => 'KO',
   
-  SEND_MESSAGE 		=> 'MESS',
-  SEND_PSEUDO 		=> 'NAME',
-  SEND_LIST 		=> 'LIST',
+  SEND_MESSAGE => 'MESS',
+  SEND_PSEUDO => 'NAME',
+  SEND_LIST => 'LIST',
 # --- </Protocol infos> ---
 # --- <User command> ---
-  USER_PSEUDO 		=> '/name',
-  USER_LIST 		=> '/list',
-  USER_HELP 		=> '/help',
+  USER_PSEUDO => '/name',
+  USER_LIST => '/list',
+  USER_HELP => '/help',
 # --- </User command> ---
 };
 
