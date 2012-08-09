@@ -18,6 +18,7 @@ use constant {
   SEND_LIST 		=> 'LIST',
 # --- </Protocol infos> ---
 # --- <User command> ---
+  USER_SEPARATION 	=> ' ',
   USER_PSEUDO 		=> '/name',
   USER_LIST 		=> '/list',
   USER_HELP 		=> '/help',
@@ -35,32 +36,33 @@ sub now{
     $mon = sprintf("%02d", $mon+1);
     return "$mday/$mon $hour:$min";
 }
-sub gererRecv{
-    $mess = shift;
-    if( $mess =~ /^$protocol_headers{recv_message}/){
-                    ($_, $pseudo, @messages) = split(":",$mess);
-                    return (now()." $pseudo a dit : ".join(":", @messages));
-    }
-    elsif( $mess =~ /^$protocol_headers{client_list}/){
-        ($_, @messages) = split(":", $mess);
-        print "Liste des participants :\n";
-        foreach $mess (@messages){
-            print " -$mess\n";
-        }
-    }
-    elsif($mess =~ /^$protocol_headers{edit_pseudo}/){
-        ($_, $mess) = split(":", $mess);
-        if($mess =~ /^$protocol_headers{server_refuse}/){
-            print "Le pseudo est deja utilise ou reserve\n";
-        }else{
-            print "Pseudo attribue\n";
-        }
-    }
-    else{
-        say "Le serveur a envoyé une commande inconnue";
-        say $mess;
-    }
-}
+
+# sub gererRecv{
+#     $mess = shift;
+#     if( $mess =~ /^$protocol_headers{recv_message}/){
+#                     ($_, $pseudo, @messages) = split(":",$mess);
+#                     return (now()." $pseudo a dit : ".join(":", @messages));
+#     }
+#     elsif( $mess =~ /^$protocol_headers{client_list}/){
+#         ($_, @messages) = split(":", $mess);
+#         print "Liste des participants :\n";
+#         foreach $mess (@messages){
+#             print " -$mess\n";
+#         }
+#     }
+#     elsif($mess =~ /^$protocol_headers{edit_pseudo}/){
+#         ($_, $mess) = split(":", $mess);
+#         if($mess =~ /^$protocol_headers{server_refuse}/){
+#             print "Le pseudo est deja utilise ou reserve\n";
+#         }else{
+#             print "Pseudo attribue\n";
+#         }
+#     }
+#     else{
+#         say "Le serveur a envoyé une commande inconnue";
+#         say $mess;
+#     }
+# }
 
 sub parseRecv{
 
@@ -89,26 +91,51 @@ sub parseRecv{
 }
 
 sub buildSend{
-  
+  my $type = shift || SEND_MESSAGE;
+  my $content;
+  if( $type eq SEND_MESSAGE ){
+    $content = shift || '';
+    return SEND_MESSAGE.SEPARATION_CHAR.$content;
+  }
+  if( $type eq SEND_PSEUDO ){
+    $content = shift || '';
+    return SEND_PSEUDO.SEPARATION_CHAR.$content;
+  }
+  if( $type eq SEND_LIST ){
+    return SEND_LIST;
+  }
+  return '';
 }
 
-
-sub gererSend{
-    $mess = shift;
-    if($mess =~ /^\/name/){
-        ($_, $mess) = split(" ", $mess);
-        $client->send("NAME:".$mess) or die "Server unreachable";
-    }elsif($mess =~ /^\/list/){
-        $client->send("LIST:") or die "Server unreachable";
-    }elsif($mess =~ /^\/help/){
-        print "Liste des commandes :\n";
-        print "/name <pseudo> : changer de pseudo.\n";
-        print "/list : liste les participants.\n";
-        print "/help : affiche ce message.\n";
-    }else{
-        $client->send("MESS:".$mess) or die "Server unreachable";
-    }
+sub parseUserCommand{
+  my ( $command, $content ) = split( USER_SEPARATION,shift,1 );
+  if( $command eq USER_PSEUDO ){
+    return buildSend( SEND_PSEUDO,$content );
+  }
+  if( $command eq USER_LIST ){
+    return buildSend( SEND_LIST );
+  }
+  if( $command eq USER_HELP ){
+    return USER_PSEUDO.' '.USER_HELP.' '.USER_LIST;
+  }
 }
+
+# sub gererSend{
+#     $mess = shift;
+#     if($mess =~ /^\/name/){
+#         ($_, $mess) = split(" ", $mess);
+#         $client->send("NAME:".$mess) or die "Server unreachable";
+#     }elsif($mess =~ /^\/list/){
+#         $client->send("LIST:") or die "Server unreachable";
+#     }elsif($mess =~ /^\/help/){
+#         print "Liste des commandes :\n";
+#         print "/name <pseudo> : changer de pseudo.\n";
+#         print "/list : liste les participants.\n";
+#         print "/help : affiche ce message.\n";
+#     }else{
+#         $client->send("MESS:".$mess) or die "Server unreachable";
+#     }
+# }
 
 # --- <Main> ---
 my $host = shift || '127.0.0.1' ;
@@ -129,10 +156,9 @@ while(1){
     foreach $test ($select->can_read(.5)) {
         if($test == $client){
             $test->recv($donnees, POSIX::BUFSIZ, 0);
-            if($donnees ne "") {
+            if($donnees ne '') {
                 #print gererRecv($donnees);
                 say parseRecv($donnees);
-                
             }else{
                 $test->close;
                 print "Le serveur a rencontré un probleme.\n";
@@ -140,8 +166,8 @@ while(1){
             }
 	}
         elsif($test == \*STDIN){
-            $foo = <STDIN>;
-            gererSend($foo);
+            $input = <STDIN>;
+            $client->send( parseUserCommand( $input ) );
         }
     }
 }

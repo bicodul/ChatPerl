@@ -13,11 +13,11 @@
 	--- </Server> ---
 	
 	--- <Client> ---
-	    Options 2bit
-	     => public
-	     => private
-	     => multi dest
-	     => 
+	    Options
+	    0 => public
+	    1 => private
+	    2 => multi dest
+	    3 => 
 	    
 	--- </Client> ---
     
