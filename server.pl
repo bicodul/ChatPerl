@@ -21,23 +21,26 @@ use constant {
 # --- </Protocol infos> ---
 };
 
-sub send_list{
-  
+sub send_list_to{
+  $client = shift;
+  $client->send("LIST#".join("#", values %client_pseudo)."##");
 }
 
 sub send_list_to_all{
+  foreach $client (@clients){
+    liste($client);
+  }
+}
+
+sub send_accept_pseudo_to{
   
 }
 
-sub send_accept_pseudo{
+sub send_refuse_pseudo_to{
   
 }
 
-sub send_refuse_pseudo{
-  
-}
-
-sub send_message{
+sub send_message_to{
   
 }
 
@@ -115,22 +118,21 @@ while(1) {
 	  }
 	  else{
 	    foreach $client ( @clients ){
-	    $client->send("MESS#".$client_pseudo{$test}."#".$donnees."##");
+	      $client->send("MESS#".$client_pseudo{$test}."#".$donnees."##");
+	    }
 	  }
+	  print "Client ", $client_pseudo{$test}, ": ";
+	  print $donnees, "\n";
 	}
-	print "Client ", $client_pseudo{$test}, ": ";
-	print $donnees, "\n";
+      }
+      else {
+	print "Deconnexion d'un client\n";
+	delete $client_pseudo{$test};
+	@clients = grep { $_ != $test } @clients;
+	$s->remove($test);
+	$test->close;
+	listAll();
       }
     }
-    else {
-      print "Deconnexion d'un client\n";
-      delete $client_pseudo{$test};
-      @clients = grep { $_ != $test } @clients;
-      $s->remove($test);
-      $test->close;
-      listAll();
-    }
   }
-}
-
 }

@@ -21,23 +21,26 @@ use constant {
 # --- </Protocol infos> ---
 };
 
-sub send_list{
-  
+sub send_list_to{
+  $client = shift;
+  $client->send("LIST#".join("#", values %client_pseudo)."##");
 }
 
 sub send_list_to_all{
+  foreach $client (@clients){
+    liste($client);
+  }
+}
+
+sub send_accept_pseudo_to{
   
 }
 
-sub send_accept_pseudo{
+sub send_refuse_pseudo_to{
   
 }
 
-sub send_refuse_pseudo{
-  
-}
-
-sub send_message{
+sub send_message_to{
   
 }
 
